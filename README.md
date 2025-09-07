@@ -26,3 +26,4 @@ Generate a file named report.txt with content "Patient record: Diabetes treatmen
 
 ### Changelog
 1. Added GUI using tkinter
+2. Using png instead of jpg
