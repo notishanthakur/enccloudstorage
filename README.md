@@ -2,6 +2,8 @@
 pip install pycryptodome
 <br>
 pip install stegano
+<br>
+apt-get install python3-tk
 
 ### WorkFlow
 
@@ -21,3 +23,6 @@ Generate a file named report.txt with content "Patient record: Diabetes treatmen
 (here we just get the filename and then decryption is done)
 8. the file is then shown to the user
 (here we just display the content)
+
+### Changelog
+1. Added GUI using tkinter
