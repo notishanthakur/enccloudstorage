@@ -50,7 +50,7 @@ Will be added in a requirements file later
 ### Diagrams
 <b>First Upload</b>
 <img width="946" height="571" alt="First Upload" src="https://github.com/user-attachments/assets/a5f9f499-aadb-401c-a7fc-facc8373ab6d" />
-<br>
+<br><br>
 <b>Retrieving</b>
 <img width="946" height="571" alt="Retrieving" src="https://github.com/user-attachments/assets/17cdbb20-3749-4794-92f1-3f2d7704f436" />
 
@@ -74,3 +74,4 @@ Will be added in a requirements file later
   10. Deploying online using Vercel and Azure Blob <br>
 
 ## Please star the repository and contribute💫
+
