@@ -31,12 +31,12 @@ Will be added in a requirements file later
 ### Steps
 1. Give user an option to upload file to cloud storage <br>
 (Here a file named report.txt with content "Patient record: Diabetes treatment plan" is generated) <br>
-2. Encrypt the file and save as report.enc, key is stored as a variable for now <br>
+2. Encrypt the file using AES (standard) and save as report.enc, AES key is stored as a variable for now <br>
 (File is uploaded to the server and the server sends a blob id) <br>
 3. Extract keywords from files and encrypt those keywords using SHA256 and create a hashmap of (encrypted keywords:blob id) <br>
 (To implement NLP based extraction) <br>
 (Instead of using blob id to create hashmap we just use report.enc) <br>
-3. Now using stegano, we make a json of the key, hashmap and hide that behind profile.jpg and store that as profile_stegano.jpg (on client side) <br>
+3. Now using stegano, we make a json of the AES key, hashmap and hide that behind profile.jpg and store that as profile_stegano.jpg (on client side) <br>
 (Can be seen using reveal.py) <br>
 4. User gets an option to search for the keyword <br>
 5. The keyword is encrypted using SHA256 <br>
@@ -74,4 +74,5 @@ Will be added in a requirements file later
   10. Deploying online using Vercel and Azure Blob <br>
 
 ## Please star the repository and contribute💫
+
 
