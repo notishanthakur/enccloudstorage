@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Home - EncCloudStorage{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="hero-section text-center py-5">
+            <h1 class="display-4 fw-bold text-primary mb-4">
+                <i class="fas fa-shield-alt"></i> EncCloudStorage
+            </h1>
+            <p class="lead mb-4">
+                Privacy-Preserving Cloud Storage with Searchable Encryption and Steganographic Key Management
+            </p>
+            <p class="text-muted mb-5">
+                Secure your files with AES encryption, search encrypted content without revealing your data, 
+                and store encryption keys steganographically in your profile picture.
+            </p>
+            
+            {% if not current_user.is_authenticated %}
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg me-md-2">
+                    <i class="fas fa-user-plus"></i> Get Started
+                </a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
+            </div>
+            {% else %}
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg me-md-2">
+                    <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+                </a>
+                <a href="{{ url_for('upload_file') }}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-upload"></i> Upload Files
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="feature-icon bg-primary text-white rounded-circle mx-auto mb-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-lock fa-lg"></i>
+                </div>
+                <h5 class="card-title">AES Encryption</h5>
+                <p class="card-text text-muted">
+                    All files are encrypted with AES-256 before upload to ensure maximum security and privacy.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="feature-icon bg-success text-white rounded-circle mx-auto mb-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-search fa-lg"></i>
+                </div>
+                <h5 class="card-title">Searchable Encryption</h5>
+                <p class="card-text text-muted">
+                    Search through your encrypted files without revealing search terms or file contents to the server.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="feature-icon bg-warning text-white rounded-circle mx-auto mb-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-image fa-lg"></i>
+                </div>
+                <h5 class="card-title">Steganographic Keys</h5>
+                <p class="card-text text-muted">
+                    Encryption keys are hidden in your profile picture using steganography, eliminating key transmission risks.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-lg-8 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> How It Works</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-upload text-primary"></i> Upload Process</h6>
+                        <ol class="small text-muted">
+                            <li>File is encrypted with AES-256</li>
+                            <li>Keywords are extracted and hashed</li>
+                            <li>Encrypted file uploaded to cloud storage</li>
+                            <li>Keys and indexes stored in profile picture</li>
+                        </ol>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-search text-success"></i> Search Process</h6>
+                        <ol class="small text-muted">
+                            <li>Search term is hashed locally</li>
+                            <li>Hashed term matched against encrypted index</li>
+                            <li>Matching files retrieved from cloud</li>
+                            <li>Files decrypted using keys from profile picture</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

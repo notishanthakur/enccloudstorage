@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - EncCloudStorage{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+            <div>
+                <a href="{{ url_for('upload_file') }}" class="btn btn-primary">
+                    <i class="fas fa-upload"></i> Upload File
+                </a>
+                <a href="{{ url_for('search_files') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-search"></i> Search Files
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Total Files</h6>
+                        <h3 class="mb-0">{{ files|length }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-file fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Encrypted Files</h6>
+                        <h3 class="mb-0">{{ files|selectattr('is_encrypted')|list|length }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-lock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">User Level</h6>
+                        <h5 class="mb-0">
+                            {% if current_user.user_level == 'admin' %}
+                                <span class="badge bg-warning text-dark">Admin</span>
+                            {% else %}
+                                <span class="badge bg-secondary">User</span>
+                            {% endif %}
+                        </h5>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-user fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Security Status</h6>
+                        <h5 class="mb-0">
+                            <span class="badge bg-success">Secure</span>
+                        </h5>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-shield-alt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Files -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-file"></i> Recent Files</h5>
+            </div>
+            <div class="card-body">
+                {% if files %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Filename</th>
+                                    <th>Size</th>
+                                    <th>Upload Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for file in files %}
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-file text-primary"></i>
+                                        {{ file.original_filename }}
+                                        {% if file.is_encrypted %}
+                                            <i class="fas fa-lock text-success ms-1" title="Encrypted"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ "%.2f"|format(file.file_size / 1024) }} KB</td>
+                                    <td>{{ file.upload_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('download_file', file_id=file.id) }}" 
+                                           class="btn btn-sm btn-outline-primary me-1" title="Download">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                        <a href="{{ url_for('delete_file', file_id=file.id) }}" 
+                                           class="btn btn-sm btn-outline-danger" title="Delete"
+                                           onclick="return confirm('Are you sure you want to delete this file?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-file fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No files uploaded yet</p>
+                        <a href="{{ url_for('upload_file') }}" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> Upload Your First File
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-history"></i> Recent Activity</h5>
+            </div>
+            <div class="card-body">
+                {% if logs %}
+                    <div class="list-group list-group-flush">
+                        {% for log in logs %}
+                        <div class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">
+                                    <i class="fas fa-{{ 'check-circle text-success' if log.success else 'times-circle text-danger' }}"></i>
+                                    {{ log.action.title() }}
+                                </div>
+                                {% if log.resource %}
+                                    <small class="text-muted">{{ log.resource }}</small>
+                                {% endif %}
+                            </div>
+                            <small class="text-muted">{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-history fa-2x text-muted mb-2"></i>
+                        <p class="text-muted small">No recent activity</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('upload_file') }}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-upload"></i><br>
+                            <small>Upload File</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('search_files') }}" class="btn btn-outline-success w-100">
+                            <i class="fas fa-search"></i><br>
+                            <small>Search Files</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <button class="btn btn-outline-info w-100" onclick="showSecurityInfo()">
+                            <i class="fas fa-shield-alt"></i><br>
+                            <small>Security Info</small>
+                        </button>
+                    </div>
+                    {% if current_user.user_level == 'admin' %}
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('admin_panel') }}" class="btn btn-outline-warning w-100">
+                            <i class="fas fa-cog"></i><br>
+                            <small>Admin Panel</small>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showSecurityInfo() {
+    alert('Security Features:\n\n' +
+          '• AES-256 Encryption\n' +
+          '• Steganographic Key Storage\n' +
+          '• Searchable Encryption\n' +
+          '• Zero-Knowledge Architecture\n' +
+          '• Activity Logging\n' +
+          '• Access Control');
+}
+</script>
+{% endblock %}

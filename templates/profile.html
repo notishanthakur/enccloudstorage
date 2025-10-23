@@ -1,0 +1,452 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - EncCloudStorage{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0"><i class="fas fa-user"></i> User Profile</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Account Information</h6>
+                        <p><strong>Username:</strong> {{ user.username }}</p>
+                        <p><strong>Email:</strong> {{ user.email }}</p>
+                        <p><strong>User Level:</strong> 
+                            {% if user.user_level == 'admin' %}
+                                <span class="badge bg-warning text-dark">Admin</span>
+                            {% else %}
+                                <span class="badge bg-secondary">User</span>
+                            {% endif %}
+                        </p>
+                        <p><strong>Account Created:</strong> {{ user.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                        <p><strong>Status:</strong> 
+                            {% if user.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-success">Security Information</h6>
+                        <p><strong>Files Uploaded:</strong> {{ file_count }}</p>
+                        <p><strong>Steganographic Image:</strong> 
+                            {% if stego_exists %}
+                                <span class="badge bg-success">Available</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Not Created</span>
+                            {% endif %}
+                        </p>
+                        <p><strong>Encryption Status:</strong> <span class="badge bg-success">AES-256</span></p>
+                        <p><strong>Key Storage:</strong> <span class="badge bg-info">Steganographic</span></p>
+                    </div>
+                </div>
+                
+                {% if stego_exists %}
+                <div class="mt-4">
+                    <h6 class="text-info"><i class="fas fa-image"></i> Steganographic Profile Image</h6>
+                    <div class="alert alert-info">
+                        <i class="fas fa-shield-alt"></i>
+                        <strong>Security Architecture:</strong> 
+                        <ul class="mb-0 mt-2">
+                            <li><strong>Plain Profile Image:</strong> Uploaded to server (safe, no sensitive data)</li>
+                            <li><strong>Steganographic Image:</strong> Remains client-side only (contains encryption keys and search indexes)</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Display Plain Profile Image -->
+                    <div class="text-center mb-3">
+                        {% if user.profile_image and user.profile_image != '' %}
+                        <div id="profile-image-container">
+                            <img src="{{ url_for('serve_image', filename=user.profile_image) }}" 
+                                 alt="Profile Image" 
+                                 class="img-thumbnail" 
+                                 style="max-width: 300px; max-height: 300px;"
+                                 onerror="showImageError()">
+                        </div>
+                        <div id="image-error" style="display: none;" class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> Image not found or cannot be displayed
+                        </div>
+                        {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> No profile image available
+                        </div>
+                        {% endif %}
+                        <p class="small text-muted mt-2">Your plain profile image (server-side)</p>
+                    </div>
+                    
+                    <p><strong>Plain Image Path:</strong> <code>{{ user.profile_image or 'Not set' }}</code></p>
+                    <p><strong>Steganographic Image:</strong> <span class="text-muted">Client-side only (not uploaded to server)</span></p>
+                    <p><strong>Last Updated:</strong> When you upload new files</p>
+                    
+                    <!-- Steganographic Data Display -->
+                    <div class="mt-3">
+                        <div class="d-flex gap-2 mb-2">
+                            <button class="btn btn-sm btn-outline-info" onclick="checkStegoData()">
+                                <i class="fas fa-bug"></i> Check Data Status
+                            </button>
+                            <button class="btn btn-sm btn-outline-success" onclick="showStegoData()">
+                                <i class="fas fa-eye"></i> View Hidden Data
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning" onclick="showRawData()">
+                                <i class="fas fa-code"></i> Raw JSON
+                            </button>
+                        </div>
+                        <div id="stego-debug-info" class="mt-2" style="display: none;">
+                            <!-- Debug info will be populated here -->
+                        </div>
+                        <div id="stego-data-display" class="mt-2" style="display: none;">
+                            <!-- Steganographic data will be displayed here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Profile Image Management -->
+                    <div class="mt-3">
+                        <h6 class="text-warning">Profile Image Management</h6>
+                        <div class="d-grid gap-2 d-md-flex">
+                            <button class="btn btn-outline-primary" onclick="generateNewProfile()">
+                                <i class="fas fa-magic"></i> Generate New Profile Image
+                            </button>
+                            <button class="btn btn-outline-info" onclick="uploadProfileImage()">
+                                <i class="fas fa-upload"></i> Upload Custom Image
+                            </button>
+                        </div>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle"></i> 
+                            Your encryption keys will be preserved when changing profile images.
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="mt-4">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>No Steganographic Image:</strong> Upload some files to create your steganographic profile image.
+                    </div>
+                    
+                    <!-- Generate Initial Profile Image -->
+                    <div class="text-center">
+                        <button class="btn btn-primary" onclick="generateNewProfile()">
+                            <i class="fas fa-magic"></i> Generate Profile Image
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Security Features -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-shield-alt"></i> Security Features</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Encryption</h6>
+                        <ul class="small">
+                            <li><i class="fas fa-check text-success"></i> AES-256-CBC encryption</li>
+                            <li><i class="fas fa-check text-success"></i> Unique keys per file</li>
+                            <li><i class="fas fa-check text-success"></i> Client-side encryption</li>
+                            <li><i class="fas fa-check text-success"></i> Secure key generation</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-success">Privacy</h6>
+                        <ul class="small">
+                            <li><i class="fas fa-check text-success"></i> Searchable encryption</li>
+                            <li><i class="fas fa-check text-success"></i> Zero-knowledge search</li>
+                            <li><i class="fas fa-check text-success"></i> Steganographic key storage</li>
+                            <li><i class="fas fa-check text-success"></i> No key transmission</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden Upload Form -->
+<div id="uploadModal" class="modal fade" tabindex="-1" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload Custom Profile Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="profileUploadForm" method="POST" action="{{ url_for('upload_profile_image') }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="profile_image" class="form-label">Select Image</label>
+                        <input type="file" class="form-control" id="profile_image" name="profile_image" accept="image/*" required>
+                        <div class="form-text">Choose an image file (PNG, JPG, etc.)</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitProfileUpload()">Upload</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function generateNewProfile() {
+    if (confirm('Generate a new profile image? Your encryption keys will be preserved.')) {
+        // Create a form and submit it
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url_for("generate_profile_image") }}';
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function uploadProfileImage() {
+    const modal = new bootstrap.Modal(document.getElementById('uploadModal'));
+    modal.show();
+}
+
+function submitProfileUpload() {
+    const form = document.getElementById('profileUploadForm');
+    const fileInput = document.getElementById('profile_image');
+    
+    if (fileInput.files.length === 0) {
+        alert('Please select an image file.');
+        return;
+    }
+    
+    if (confirm('Upload this image as your new profile picture? Your encryption keys will be preserved.')) {
+        form.submit();
+    }
+}
+
+// Auto-refresh profile image after changes
+if (window.location.search.includes('updated=1')) {
+    setTimeout(() => {
+        location.reload();
+    }, 1000);
+}
+
+function showImageError() {
+    document.getElementById('profile-image-container').style.display = 'none';
+    document.getElementById('image-error').style.display = 'block';
+}
+
+function checkStegoData() {
+    const debugDiv = document.getElementById('stego-debug-info');
+    const dataDiv = document.getElementById('stego-data-display');
+    debugDiv.style.display = 'block';
+    dataDiv.style.display = 'none';
+    debugDiv.innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin"></i> Checking steganographic data...</div>';
+    
+    fetch('/debug/stego/{{ user.id }}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                debugDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        <h6><i class="fas fa-check-circle"></i> Steganographic Data Status</h6>
+                        <ul class="mb-0">
+                            <li><strong>Encryption Keys:</strong> ${data.keys_count}</li>
+                            <li><strong>Search Indexes:</strong> ${data.index_count}</li>
+                            <li><strong>User ID:</strong> ${data.user_id}</li>
+                            <li><strong>Last Updated:</strong> ${data.timestamp || 'Unknown'}</li>
+                        </ul>
+                    </div>
+                `;
+            } else {
+                debugDiv.innerHTML = `
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-exclamation-triangle"></i> Steganographic Data Issue</h6>
+                        <p class="mb-0">${data.error}</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            debugDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <h6><i class="fas fa-times-circle"></i> Error</h6>
+                    <p class="mb-0">Failed to check steganographic data: ${error.message}</p>
+                </div>
+            `;
+        });
+}
+
+function showStegoData() {
+    const dataDiv = document.getElementById('stego-data-display');
+    const debugDiv = document.getElementById('stego-debug-info');
+    dataDiv.style.display = 'block';
+    debugDiv.style.display = 'none';
+    dataDiv.innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin"></i> Loading steganographic data...</div>';
+    
+    fetch('/user/stego-data/{{ user.id }}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                dataDiv.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-key"></i> Your Hidden Steganographic Data</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-primary"><i class="fas fa-key"></i> Encryption Keys (${data.keys_count})</h6>
+                                    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>File Reference</th>
+                                                    <th>Encryption Key</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${Object.entries(data.keys).map(([fileRef, key]) => `
+                                                    <tr>
+                                                        <td><code>${fileRef}</code></td>
+                                                        <td><code>${key}</code></td>
+                                                    </tr>
+                                                `).join('')}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-success"><i class="fas fa-search"></i> Search Index (${data.index_count})</h6>
+                                    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Keyword Hash</th>
+                                                    <th>File Reference</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${Object.entries(data.index).map(([hash, fileRef]) => `
+                                                    <tr>
+                                                        <td><code>${hash}</code></td>
+                                                        <td><code>${fileRef}</code></td>
+                                                    </tr>
+                                                `).join('')}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="alert alert-warning">
+                                <h6><i class="fas fa-shield-alt"></i> Security Notice</h6>
+                                <p class="mb-0">This data is normally hidden in your profile image. Keep this information secure and do not share it with others.</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                dataDiv.innerHTML = `
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-exclamation-triangle"></i> No Data Available</h6>
+                        <p class="mb-0">${data.error}</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            dataDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <h6><i class="fas fa-times-circle"></i> Error</h6>
+                    <p class="mb-0">Failed to load steganographic data: ${error.message}</p>
+                </div>
+            `;
+        });
+}
+
+function showRawData() {
+    const dataDiv = document.getElementById('stego-data-display');
+    const debugDiv = document.getElementById('stego-debug-info');
+    dataDiv.style.display = 'block';
+    debugDiv.style.display = 'none';
+    dataDiv.innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin"></i> Loading raw steganographic data...</div>';
+    
+    fetch('/user/hidden-message/{{ user.id }}')
+        .then(response => response.json())
+        .then(rawData => {
+            if (rawData.error) {
+                dataDiv.innerHTML = `
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-exclamation-triangle"></i> No Data Available</h6>
+                        <p class="mb-0">${rawData.error}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            dataDiv.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-code"></i> Hidden Message in Steganographic Image</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle"></i> Raw Hidden Data</h6>
+                            <p class="mb-0">This is the exact JSON structure hidden in your steganographic image:</p>
+                        </div>
+                        <pre class="bg-dark text-light p-3 rounded" style="max-height: 400px; overflow-y: auto; font-family: 'Courier New', monospace;"><code>${JSON.stringify(rawData, null, 2)}</code></pre>
+                        <div class="mt-3">
+                            <button class="btn btn-sm btn-outline-primary" onclick="copyRawData()">
+                                <i class="fas fa-copy"></i> Copy Raw Data
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="downloadRawData()">
+                                <i class="fas fa-download"></i> Download Raw Data
+                            </button>
+                        </div>
+                        <div class="alert alert-warning mt-3">
+                            <h6><i class="fas fa-shield-alt"></i> Security Notice</h6>
+                            <p class="mb-0">This data contains your encryption keys and search indexes. Keep it secure and do not share it with others.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        })
+        .catch(error => {
+            dataDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <h6><i class="fas fa-times-circle"></i> Error</h6>
+                    <p class="mb-0">Failed to load steganographic data: ${error.message}</p>
+                </div>
+            `;
+        });
+}
+
+function copyRawData() {
+    const jsonData = document.querySelector('pre code').textContent;
+    navigator.clipboard.writeText(jsonData).then(() => {
+        alert('Raw steganographic data copied to clipboard!');
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+        alert('Failed to copy to clipboard');
+    });
+}
+
+function downloadRawData() {
+    const jsonData = document.querySelector('pre code').textContent;
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'hidden_message.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Steganographic Overview - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-images"></i> Steganographic Images Overview</h2>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('admin_export_stego_data') }}" class="btn btn-outline-success">
+                    <i class="fas fa-download"></i> Export Data
+                </a>
+                <a href="{{ url_for('admin_panel') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Admin Panel
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h4>{{ users_with_stego|length }}</h4>
+                <p class="mb-0">Users with Stego Images</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h4>{{ total_keys }}</h4>
+                <p class="mb-0">Total Encryption Keys</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h4>{{ total_indexes }}</h4>
+                <p class="mb-0">Total Search Indexes</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h4>{{ users_without_stego|length }}</h4>
+                <p class="mb-0">Users without Stego</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Users with Steganographic Images -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-users"></i> Users with Steganographic Images ({{ users_with_stego|length }})</h5>
+            </div>
+            <div class="card-body">
+                {% if users_with_stego %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Steganographic Image</th>
+                                <th>Keys Count</th>
+                                <th>Index Count</th>
+                                <th>Last Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user_data in users_with_stego %}
+                            <tr>
+                                <td>
+                                    <strong>{{ user_data.user.username }}</strong><br>
+                                    <small class="text-muted">{{ user_data.user.email }}</small>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if user_data.user.profile_image %}
+                                        <img src="{{ url_for('serve_image', filename=user_data.user.profile_image) }}" 
+                                             alt="Plain Profile Image" 
+                                             class="img-thumbnail me-2" 
+                                             style="width: 50px; height: 50px; object-fit: cover;"
+                                             onerror="this.style.display='none'">
+                                        <div>
+                                            <small class="text-muted">Plain Image (Server)</small>
+                                        </div>
+                                        {% else %}
+                                        <div class="bg-light rounded me-2 d-flex align-items-center justify-content-center" 
+                                             style="width: 50px; height: 50px;">
+                                            <i class="fas fa-user text-muted"></i>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted">No plain image</small>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">{{ user_data.keys_count }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">{{ user_data.index_count }}</span>
+                                </td>
+                                <td>
+                                    <small>{{ user_data.last_updated or 'Unknown' }}</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-images fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No users have steganographic images yet</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Users without Steganographic Images -->
+{% if users_without_stego %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Users without Steganographic Images ({{ users_without_stego|length }})</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Status</th>
+                                <th>Files Count</th>
+                                <th>Last Activity</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users_without_stego %}
+                            <tr>
+                                <td>
+                                    <strong>{{ user.username }}</strong><br>
+                                    <small class="text-muted">{{ user.email }}</small>
+                                </td>
+                                <td>
+                                    {% if user.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ user.files|length }}</span>
+                                </td>
+                                <td>
+                                    <small>{{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else 'Never' }}</small>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('admin_user_details', user_id=user.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-user"></i> View Details
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- System Health -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-heartbeat"></i> Steganographic System Health</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h5 class="text-primary">{{ (users_with_stego|length / all_users|length * 100)|round(1) }}%</h5>
+                            <p class="text-muted">Users with Stego Images</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h5 class="text-success">{{ total_keys }}</h5>
+                            <p class="text-muted">Total Encryption Keys</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h5 class="text-info">{{ total_indexes }}</h5>
+                            <p class="text-muted">Total Search Indexes</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> Steganographic System Status</h6>
+                    <ul class="mb-0">
+                        <li><strong>Total Users:</strong> {{ all_users|length }}</li>
+                        <li><strong>Users with Stego Images:</strong> {{ users_with_stego|length }}</li>
+                        <li><strong>Users without Stego Images:</strong> {{ users_without_stego|length }}</li>
+                        <li><strong>System Coverage:</strong> {{ (users_with_stego|length / all_users|length * 100)|round(1) }}%</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

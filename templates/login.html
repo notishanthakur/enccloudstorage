@@ -1,0 +1,716 @@
+{% extends "base.html" %}
+
+{% block title %}Login - EncCloudStorage{% endblock %}
+
+{% block content %}
+<!-- Dark Mode Toggle -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1050;">
+    <button class="btn btn-outline-secondary" id="darkModeToggle" onclick="toggleDarkMode()">
+        <i class="fas fa-moon" id="darkModeIcon"></i>
+    </button>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-body p-0">
+                <div class="row g-0">
+                    <!-- Hello Kitty (Left Side) -->
+                    <div class="col-lg-3 col-md-4 p-4 d-flex align-items-center justify-content-center" id="helloKittyContainer">
+                        <div class="hello-kitty" id="helloKitty">
+                            <!-- Hello Kitty SVG -->
+                            <svg width="150" height="150" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Head -->
+                                <circle cx="60" cy="60" r="50" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+                                
+                                <!-- Left Ear -->
+                                <ellipse cx="35" cy="35" rx="12" ry="20" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+                                <ellipse cx="35" cy="35" rx="8" ry="15" fill="#ffb6c1"/>
+                                
+                                <!-- Right Ear -->
+                                <ellipse cx="85" cy="35" rx="12" ry="20" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+                                <ellipse cx="85" cy="35" rx="8" ry="15" fill="#ffb6c1"/>
+                                
+                                <!-- Left Eye -->
+                                <ellipse cx="45" cy="55" rx="8" ry="12" fill="#000000" id="leftEye"/>
+                                
+                                <!-- Right Eye -->
+                                <ellipse cx="75" cy="55" rx="8" ry="12" fill="#000000" id="rightEye"/>
+                                
+                                <!-- Nose -->
+                                <ellipse cx="60" cy="70" rx="3" ry="2" fill="#ffb6c1"/>
+                                
+                                <!-- Mouth -->
+                                <path d="M 55 80 Q 60 85 65 80" stroke="#000000" stroke-width="2" fill="none"/>
+                                
+                                <!-- Whiskers -->
+                                <line x1="25" y1="65" x2="40" y2="70" stroke="#000000" stroke-width="2"/>
+                                <line x1="25" y1="75" x2="40" y2="75" stroke="#000000" stroke-width="2"/>
+                                <line x1="80" y1="70" x2="95" y2="65" stroke="#000000" stroke-width="2"/>
+                                <line x1="80" y1="75" x2="95" y2="75" stroke="#000000" stroke-width="2"/>
+                                
+                                <!-- Blush circles -->
+                                <circle cx="30" cy="85" r="8" fill="#ffb6c1" opacity="0" class="blush" id="leftBlush"/>
+                                <circle cx="90" cy="85" r="8" fill="#ffb6c1" opacity="0" class="blush" id="rightBlush"/>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <!-- Login Form (Center) -->
+                    <div class="col-lg-6 col-md-4 p-5">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+                            <h2 class="text-dark">Login</h2>
+                            <p class="text-muted">Access your encrypted storage</p>
+                        </div>
+                        
+                        <form method="POST" id="loginForm">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input type="text" class="form-control" id="username" name="username" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" id="password" name="password" required>
+                                    <button class="btn btn-outline-secondary" type="button" id="passwordToggle" data-password-toggle>
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg" id="loginBtn" disabled>
+                                    <i class="fas fa-sign-in-alt"></i> Login
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="text-center">
+                            <p class="mb-0">Don't have an account?</p>
+                            <a href="{{ url_for('register') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-user-plus"></i> Register
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Security Check (Right Side) -->
+                    <div class="col-lg-3 col-md-4 bg-light p-4">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-dice fa-2x text-info mb-3"></i>
+                            <h4 class="text-dark">Security Verification</h4>
+                            <p class="text-muted">Complete the security check</p>
+                        </div>
+                        
+                        <div class="dice-container text-center mb-4">
+                            <div class="dice" id="dice1">
+                                <div class="dice-face">1</div>
+                                <div class="dice-face">2</div>
+                                <div class="dice-face">3</div>
+                                <div class="dice-face">4</div>
+                                <div class="dice-face">5</div>
+                                <div class="dice-face">6</div>
+                            </div>
+                            <div class="dice" id="dice2">
+                                <div class="dice-face">1</div>
+                                <div class="dice-face">2</div>
+                                <div class="dice-face">3</div>
+                                <div class="dice-face">4</div>
+                                <div class="dice-face">5</div>
+                                <div class="dice-face">6</div>
+                            </div>
+                        </div>
+                        
+                        <div class="dice-result text-center mb-3">
+                            <span id="resultText" class="h4">Rolling...</span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <input type="number" class="form-control text-center" 
+                                   id="diceInput" placeholder="Enter the sum" 
+                                   min="2" max="12" required>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="button" class="btn btn-info" id="verifyBtn">
+                                <i class="fas fa-check"></i> Verify
+                            </button>
+                        </div>
+                        
+                        <div id="securityMessage" class="mt-3 text-center"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-3">
+            <small class="text-muted">
+                <i class="fas fa-lock"></i> Your data is encrypted and secure
+            </small>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Dark Mode Styles */
+[data-theme="dark"] {
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .card {
+    background-color: #2d2d2d;
+    border-color: #444;
+}
+
+[data-theme="dark"] .form-control {
+    background-color: #3d3d3d !important;
+    border-color: #555 !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .form-control:focus {
+    background-color: #3d3d3d !important;
+    border-color: #007bff !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+[data-theme="dark"] .form-control::placeholder {
+    color: #aaa !important;
+}
+
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="password"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="number"] {
+    background-color: #3d3d3d !important;
+    border-color: #555 !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] input[type="text"]:focus,
+[data-theme="dark"] input[type="password"]:focus,
+[data-theme="dark"] input[type="email"]:focus,
+[data-theme="dark"] input[type="number"]:focus {
+    background-color: #3d3d3d !important;
+    border-color: #007bff !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .input-group-text {
+    background-color: #3d3d3d;
+    border-color: #555;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .btn-outline-secondary {
+    border-color: #555;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .btn-outline-secondary:hover {
+    background-color: #555;
+    border-color: #555;
+}
+
+[data-theme="dark"] .text-dark {
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .text-muted {
+    color: #aaa !important;
+}
+
+[data-theme="dark"] .bg-light {
+    background-color: #2d2d2d !important;
+}
+
+[data-theme="dark"] .btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+[data-theme="dark"] .btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+[data-theme="dark"] .btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+}
+
+[data-theme="dark"] .btn-info:hover {
+    background-color: #138496;
+    border-color: #138496;
+}
+
+[data-theme="dark"] .btn-outline-primary {
+    border-color: #007bff;
+    color: #007bff;
+}
+
+[data-theme="dark"] .btn-outline-primary:hover {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .dice-face {
+    background: linear-gradient(145deg, #3d3d3d, #2d2d2d);
+    border-color: #555;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .dice {
+    box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+}
+
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6 {
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] p,
+[data-theme="dark"] span,
+[data-theme="dark"] div {
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .form-label {
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .btn {
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .btn-outline-primary {
+    color: #007bff !important;
+}
+
+[data-theme="dark"] .btn-outline-primary:hover {
+    color: #ffffff !important;
+}
+
+/* Hello Kitty Styles */
+.hello-kitty {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.hello-kitty:hover {
+    transform: scale(1.1);
+}
+
+.hello-kitty svg {
+    transition: all 0.3s ease;
+    width: 150px;
+    height: 150px;
+}
+
+/* Eye animations */
+.hello-kitty .eye-closed {
+    transform: scaleY(0.1);
+    transform-origin: center;
+    transition: transform 0.2s ease;
+}
+
+.hello-kitty .eye-wink {
+    transform: scaleY(0.3);
+    transform-origin: center;
+}
+
+.hello-kitty .eye-follow {
+    animation: follow 2s ease-in-out infinite;
+}
+
+.hello-kitty .eye-right {
+    transform: translateX(3px);
+    transition: transform 0.3s ease;
+}
+
+.hello-kitty .move-towards-username {
+    position: absolute !important;
+    left: 75% !important;
+    top: 20% !important;
+    transform: translateX(0) translateY(0) rotate(-10deg) scale(1.1) !important;
+    transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+    z-index: 10 !important;
+    animation: float 1.5s ease-in-out infinite !important;
+}
+
+.hello-kitty .move-towards-password {
+    position: absolute !important;
+    left: 75% !important;
+    top: 60% !important;
+    transform: translateX(0) translateY(0) rotate(10deg) scale(1.1) !important;
+    transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+    z-index: 10 !important;
+    animation: float 1.5s ease-in-out infinite !important;
+}
+
+@keyframes float {
+    0%, 100% { 
+        transform: translateY(0px) rotate(-10deg) scale(1.1); 
+    }
+    25% { 
+        transform: translateY(-8px) rotate(-8deg) scale(1.15); 
+    }
+    50% { 
+        transform: translateY(-15px) rotate(-10deg) scale(1.1); 
+    }
+    75% { 
+        transform: translateY(-8px) rotate(-12deg) scale(1.15); 
+    }
+}
+
+@keyframes follow {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(5px); }
+}
+
+/* Blush effect */
+.hello-kitty .blush {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.hello-kitty.blushing .blush {
+    opacity: 1;
+}
+
+.dice-container {
+    perspective: 1000px;
+    margin: 20px 0;
+}
+
+.dice {
+    width: 50px;
+    height: 50px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.6s;
+    margin: 0 5px;
+    display: inline-block;
+}
+
+.dice-face {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(145deg, #ffffff, #f0f0f0);
+    border: 2px solid #333;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}
+
+.dice-face:nth-child(1) { transform: rotateY(0deg) translateZ(25px); }
+.dice-face:nth-child(2) { transform: rotateY(90deg) translateZ(25px); }
+.dice-face:nth-child(3) { transform: rotateY(180deg) translateZ(25px); }
+.dice-face:nth-child(4) { transform: rotateY(-90deg) translateZ(25px); }
+.dice-face:nth-child(5) { transform: rotateX(90deg) translateZ(25px); }
+.dice-face:nth-child(6) { transform: rotateX(-90deg) translateZ(25px); }
+
+.dice.rolling {
+    animation: roll 1s infinite;
+}
+
+@keyframes roll {
+    0% { transform: rotateX(0deg) rotateY(0deg); }
+    25% { transform: rotateX(90deg) rotateY(90deg); }
+    50% { transform: rotateX(180deg) rotateY(180deg); }
+    75% { transform: rotateX(270deg) rotateY(270deg); }
+    100% { transform: rotateX(360deg) rotateY(360deg); }
+}
+
+.dice-result {
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.error-message {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.success-message {
+    color: #28a745;
+    font-weight: bold;
+}
+</style>
+
+<script>
+let dice1Value, dice2Value, correctSum;
+let isRolling = false;
+let isVerified = false;
+
+// Initialize dice rolling
+function initDiceRoll() {
+    isRolling = true;
+    isVerified = false;
+    document.getElementById('dice1').classList.add('rolling');
+    document.getElementById('dice2').classList.add('rolling');
+    document.getElementById('resultText').textContent = 'Rolling...';
+    document.getElementById('diceInput').value = '';
+    document.getElementById('securityMessage').innerHTML = '';
+    document.getElementById('loginBtn').disabled = true;
+    
+    // Stop rolling after 2 seconds
+    setTimeout(() => {
+        stopDiceRoll();
+    }, 2000);
+}
+
+function stopDiceRoll() {
+    isRolling = false;
+    document.getElementById('dice1').classList.remove('rolling');
+    document.getElementById('dice2').classList.remove('rolling');
+    
+    // Generate random values
+    dice1Value = Math.floor(Math.random() * 6) + 1;
+    dice2Value = Math.floor(Math.random() * 6) + 1;
+    correctSum = dice1Value + dice2Value;
+    
+    // Update display
+    document.getElementById('resultText').textContent = `${dice1Value} + ${dice2Value} = ?`;
+    document.getElementById('diceInput').focus();
+    
+    // Update dice visual display to match the values
+    updateDiceDisplay();
+}
+
+// Handle verification
+document.getElementById('verifyBtn').addEventListener('click', function() {
+    if (isRolling) {
+        document.getElementById('securityMessage').innerHTML = 
+            '<div class="error-message">Please wait for the dice to stop rolling!</div>';
+        return;
+    }
+    
+    const userInput = parseInt(document.getElementById('diceInput').value);
+    
+    if (userInput === correctSum) {
+        isVerified = true;
+        document.getElementById('securityMessage').innerHTML = 
+            '<div class="success-message"><i class="fas fa-check"></i> Verified!</div>';
+        document.getElementById('loginBtn').disabled = false;
+    } else {
+        document.getElementById('securityMessage').innerHTML = 
+            '<div class="error-message"><i class="fas fa-times"></i> Incorrect! Try again.</div>';
+        
+        // Re-roll dice after incorrect answer
+        setTimeout(() => {
+            initDiceRoll();
+        }, 1500);
+    }
+});
+
+// Handle form submission
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    if (!isVerified) {
+        e.preventDefault();
+        document.getElementById('securityMessage').innerHTML = 
+            '<div class="error-message">Please complete the security verification first!</div>';
+        return;
+    }
+});
+
+// Update dice visual display to match the values
+function updateDiceDisplay() {
+    const dice1 = document.getElementById('dice1');
+    const dice2 = document.getElementById('dice2');
+    
+    // Reset transforms
+    dice1.style.transform = '';
+    dice2.style.transform = '';
+    
+    // Apply transforms to show correct faces
+    const rotations = {
+        1: 'rotateX(0deg) rotateY(0deg)',
+        2: 'rotateY(90deg)',
+        3: 'rotateY(180deg)',
+        4: 'rotateY(-90deg)',
+        5: 'rotateX(90deg)',
+        6: 'rotateX(-90deg)'
+    };
+    
+    dice1.style.transform = rotations[dice1Value];
+    dice2.style.transform = rotations[dice2Value];
+    
+    // Update the dice face content to show the actual numbers
+    const dice1Faces = dice1.querySelectorAll('.dice-face');
+    const dice2Faces = dice2.querySelectorAll('.dice-face');
+    
+    // Set the content of each face to show the number
+    dice1Faces.forEach((face, index) => {
+        face.textContent = dice1Value;
+    });
+    dice2Faces.forEach((face, index) => {
+        face.textContent = dice2Value;
+    });
+}
+
+// Dark Mode Toggle
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    const icon = document.getElementById('darkModeIcon');
+    const isDark = document.body.classList.contains('dark-mode');
+    icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+    localStorage.setItem('darkMode', isDark);
+}
+
+// Load dark mode preference
+if (localStorage.getItem('darkMode') === 'true') {
+    document.body.classList.add('dark-mode');
+    document.getElementById('darkModeIcon').className = 'fas fa-sun';
+}
+
+// Hello Kitty Interactions
+function updateHelloKitty() {
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const leftEye = document.getElementById('leftEye');
+    const rightEye = document.getElementById('rightEye');
+    
+    // Username hover - see right with both eyes and blush
+    usernameInput.addEventListener('mouseenter', function() {
+        const kitty = document.getElementById('helloKitty');
+        
+        // Eye movements
+        leftEye.classList.remove('eye-closed');
+        rightEye.classList.remove('eye-closed');
+        leftEye.classList.add('eye-right');
+        rightEye.classList.add('eye-right');
+        
+        // Add blush effect
+        kitty.classList.add('blushing');
+        
+        // Move kitty closer to the field
+        kitty.style.transform = 'translateX(60px) translateY(0)';
+        kitty.style.transition = 'transform 0.3s ease';
+        
+    });
+    
+    usernameInput.addEventListener('mouseleave', function() {
+        const kitty = document.getElementById('helloKitty');
+        
+        // Remove eye movements
+        leftEye.classList.remove('eye-closed');
+        rightEye.classList.remove('eye-closed');
+        leftEye.classList.remove('eye-right');
+        rightEye.classList.remove('eye-right');
+        
+        // Remove blush effect
+        kitty.classList.remove('blushing');
+        
+        // Reset kitty to original position
+        kitty.style.transform = 'translateX(0) translateY(0)';
+        
+    });
+    
+    // Password typing - close eyes
+    passwordInput.addEventListener('focus', function() {
+        const kitty = document.getElementById('helloKitty');
+        
+        // Close eyes
+        leftEye.classList.add('eye-closed');
+        rightEye.classList.add('eye-closed');
+        
+        // Move kitty closer to the field
+        kitty.style.transform = 'translateX(60px) translateY(0)';
+        kitty.style.transition = 'transform 0.3s ease';
+        
+    });
+    
+    passwordInput.addEventListener('blur', function() {
+        const kitty = document.getElementById('helloKitty');
+        
+        // Open eyes
+        leftEye.classList.remove('eye-closed');
+        rightEye.classList.remove('eye-closed');
+        
+        // Reset kitty to original position
+        kitty.style.transform = 'translateX(0) translateY(0)';
+        
+    });
+    
+    // Password visibility toggle
+    const passwordToggle = document.getElementById('passwordToggle');
+    if (passwordToggle) {
+        passwordToggle.addEventListener('click', function() {
+            const kitty = document.getElementById('helloKitty');
+            
+            if (passwordInput.type === 'password') {
+                // Show password - open right eye 50%
+                passwordInput.type = 'text';
+                passwordToggle.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                leftEye.classList.add('eye-closed');
+                rightEye.classList.remove('eye-closed');
+                rightEye.classList.add('eye-wink');
+                
+                // Move kitty slightly rightwards
+                kitty.style.transform = 'translateX(30px) translateY(0)';
+                kitty.style.transition = 'transform 0.3s ease';
+            } else {
+                // Hide password - close both eyes
+                passwordInput.type = 'password';
+                passwordToggle.innerHTML = '<i class="fas fa-eye"></i>';
+                leftEye.classList.add('eye-closed');
+                rightEye.classList.remove('eye-wink');
+                rightEye.classList.add('eye-closed');
+                
+                // Reset kitty position
+                kitty.style.transform = 'translateX(0) translateY(0)';
+            }
+        });
+    }
+}
+
+// Initialize Hello Kitty interactions
+updateHelloKitty();
+
+// Initialize dice display on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Set initial dice display
+    const dice1 = document.getElementById('dice1');
+    const dice2 = document.getElementById('dice2');
+    
+    if (dice1 && dice2) {
+        dice1.style.transform = 'rotateX(0deg) rotateY(0deg)';
+        dice2.style.transform = 'rotateX(0deg) rotateY(0deg)';
+    }
+});
+
+// Start initial dice roll
+initDiceRoll();
+
+// Re-roll dice every 20 seconds if not verified
+setInterval(() => {
+    if (!isVerified && !isRolling) {
+        initDiceRoll();
+    }
+}, 20000);
+
+</script>
+{% endblock %}

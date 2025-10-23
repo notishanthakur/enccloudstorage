@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Upload File - EncCloudStorage{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-upload"></i> Upload & Encrypt File</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                    <div class="mb-4">
+                        <label for="file" class="form-label">Select File</label>
+                        <input type="file" class="form-control" id="file" name="file" required>
+                        <div class="form-text">
+                            Maximum file size: 16MB. Files will be encrypted with AES-256 before upload.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="access_level" class="form-label">Access Level</label>
+                        <select class="form-select" id="access_level" name="access_level">
+                            <option value="private">Private (Only you can access)</option>
+                            <option value="shared">Shared (Other users can search)</option>
+                            <option value="public">Public (Visible to all users)</option>
+                        </select>
+                        <div class="form-text">
+                            Choose who can access this file after upload.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="autoKeywords" checked>
+                            <label class="form-check-label" for="autoKeywords">
+                                Automatically extract keywords for searchable encryption
+                            </label>
+                        </div>
+                        <div class="form-text">
+                            Keywords will be extracted from file content to enable encrypted search.
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary me-md-2">
+                            <i class="fas fa-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="uploadBtn">
+                            <i class="fas fa-upload"></i> Upload & Encrypt
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Upload Progress -->
+        <div class="card mt-4" id="progressCard" style="display: none;">
+            <div class="card-body">
+                <h6><i class="fas fa-cog fa-spin"></i> Processing File...</h6>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                         role="progressbar" style="width: 0%"></div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-muted" id="progressText">Preparing encryption...</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Security Information -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-shield-alt"></i> Security Process</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Encryption Process</h6>
+                        <ol class="small">
+                            <li>File is encrypted with AES-256-CBC</li>
+                            <li>Random encryption key is generated</li>
+                            <li>Keywords are extracted and hashed</li>
+                            <li>Encrypted file uploaded to cloud storage</li>
+                        </ol>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-success">Key Management</h6>
+                        <ol class="small">
+                            <li>Encryption key stored in your profile picture</li>
+                            <li>Search index embedded steganographically</li>
+                            <li>No keys transmitted during normal operations</li>
+                            <li>Client-side decryption only</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    const fileInput = document.getElementById('file');
+    const progressCard = document.getElementById('progressCard');
+    const progressBar = document.querySelector('.progress-bar');
+    const progressText = document.getElementById('progressText');
+    const uploadBtn = document.getElementById('uploadBtn');
+    
+    if (fileInput.files.length > 0) {
+        // Show progress
+        progressCard.style.display = 'block';
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        
+        // Simulate progress
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 20;
+            if (progress > 90) progress = 90;
+            
+            progressBar.style.width = progress + '%';
+            
+            if (progress < 30) {
+                progressText.textContent = 'Encrypting file...';
+            } else if (progress < 60) {
+                progressText.textContent = 'Extracting keywords...';
+            } else if (progress < 90) {
+                progressText.textContent = 'Uploading to cloud storage...';
+            }
+        }, 200);
+        
+        // Complete progress when form submits
+        setTimeout(() => {
+            clearInterval(interval);
+            progressBar.style.width = '100%';
+            progressText.textContent = 'Upload complete!';
+        }, 2000);
+    }
+});
+
+// File size validation
+document.getElementById('file').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const maxSize = 16 * 1024 * 1024; // 16MB
+    
+    if (file && file.size > maxSize) {
+        alert('File size exceeds 16MB limit. Please choose a smaller file.');
+        e.target.value = '';
+    }
+});
+</script>
+{% endblock %}

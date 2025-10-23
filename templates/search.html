@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Search Files - EncCloudStorage{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-search"></i> Search Encrypted Files</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" id="searchForm">
+                    <div class="mb-4">
+                        <label for="search_term" class="form-label">Search Term</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" id="search_term" name="search_term" 
+                                   placeholder="Enter keyword to search..." required>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                        <div class="form-text">
+                            Search through your encrypted files without revealing the search term to the server.
+                        </div>
+                    </div>
+                </form>
+                
+                <!-- Search Results -->
+                {% if matches is defined %}
+                    <div class="mt-4">
+                        <h6 class="text-success">
+                            <i class="fas fa-check-circle"></i> 
+                            Search Results for "{{ search_term }}"
+                        </h6>
+                        
+                        {% if matches %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Filename</th>
+                                            <th>Size</th>
+                                            <th>Upload Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for match in matches %}
+                                        <tr>
+                                            <td>
+                                                <i class="fas fa-file text-primary"></i>
+                                                {{ match.filename }}
+                                                <i class="fas fa-lock text-success ms-1" title="Encrypted"></i>
+                                            </td>
+                                            <td>{{ "%.2f"|format(match.file_size / 1024) }} KB</td>
+                                            <td>{{ match.upload_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                            <td>
+                                                <a href="{{ url_for('download_file', file_id=match.id) }}" 
+                                                   class="btn btn-sm btn-outline-primary" title="Download">
+                                                    <i class="fas fa-download"></i> Download
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                No files found matching "{{ search_term }}". Try different keywords.
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Search Information -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle"></i> How Searchable Encryption Works</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Privacy-Preserving Search</h6>
+                        <ul class="small">
+                            <li>Your search term is hashed locally</li>
+                            <li>Server never sees your actual search terms</li>
+                            <li>Only encrypted indexes are compared</li>
+                            <li>File contents remain encrypted</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-success">Security Benefits</h6>
+                        <ul class="small">
+                            <li>Zero-knowledge search capability</li>
+                            <li>No search history stored on server</li>
+                            <li>Encrypted files remain secure</li>
+                            <li>Client-side decryption only</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Search Tips -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-lightbulb"></i> Search Tips</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6 class="text-info">For Text Files</h6>
+                        <ul class="small">
+                            <li>Search for content keywords</li>
+                            <li>Use specific terms</li>
+                            <li>Avoid common words</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-warning">For File Names</h6>
+                        <ul class="small">
+                            <li>Search by filename parts</li>
+                            <li>Use file extensions</li>
+                            <li>Include project names</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-success">Best Practices</h6>
+                        <ul class="small">
+                            <li>Use descriptive filenames</li>
+                            <li>Add meaningful content</li>
+                            <li>Organize by keywords</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('searchForm').addEventListener('submit', function(e) {
+    const searchTerm = document.getElementById('search_term').value.trim();
+    
+    if (!searchTerm) {
+        e.preventDefault();
+        alert('Please enter a search term.');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = document.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+    submitBtn.disabled = true;
+    
+    // Re-enable button after a delay (in case of errors)
+    setTimeout(() => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }, 5000);
+});
+
+// Auto-focus search input
+document.getElementById('search_term').focus();
+</script>
+{% endblock %}

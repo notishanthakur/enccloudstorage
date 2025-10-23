@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Steganographic Image - Admin View{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-image"></i> Steganographic Image Analysis</h2>
+            <a href="{{ url_for('admin_panel') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Admin
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user"></i> User Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Username:</strong> {{ user.username }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>User Level:</strong> 
+                    {% if user.user_level == 'admin' %}
+                        <span class="badge bg-warning text-dark">Admin</span>
+                    {% else %}
+                        <span class="badge bg-secondary">User</span>
+                    {% endif %}
+                </p>
+                <p><strong>Image Path:</strong> <code>{{ stego_path }}</code></p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-shield-alt"></i> Security Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-success">
+                    <i class="fas fa-lock"></i>
+                    <strong>Encrypted Data Found:</strong> This image contains hidden encryption keys and search indexes.
+                </div>
+                <p><strong>Data Type:</strong> JSON payload with keys and indexes</p>
+                <p><strong>Security Level:</strong> <span class="badge bg-success">High</span></p>
+                
+                <!-- Display the steganographic image -->
+                <div class="text-center mt-3">
+                    <img src="{{ url_for('serve_image', filename=stego_path) }}" 
+                         alt="Steganographic Image" 
+                         class="img-thumbnail" 
+                         style="max-width: 200px; max-height: 200px;">
+                    <p class="small text-muted mt-2">Steganographic image containing hidden data</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-code"></i> Hidden Data Analysis</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Payload Information</h6>
+                        <ul class="small">
+                            <li><strong>User ID:</strong> {{ payload.user_id }}</li>
+                            <li><strong>Timestamp:</strong> {{ payload.timestamp }}</li>
+                            <li><strong>Index Entries:</strong> {{ payload.index|length }}</li>
+                            <li><strong>Key Entries:</strong> {{ payload.keys|length }}</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-success">Security Features</h6>
+                        <ul class="small">
+                            <li><i class="fas fa-check text-success"></i> Encrypted file keys</li>
+                            <li><i class="fas fa-check text-success"></i> Search index mapping</li>
+                            <li><i class="fas fa-check text-success"></i> Steganographic storage</li>
+                            <li><i class="fas fa-check text-success"></i> Client-side extraction</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <h6 class="text-info">Search Index (First 10 entries)</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Keyword Hash</th>
+                                <th>File Reference</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for hash_key, file_ref in payload.index.items()[:10] %}
+                            <tr>
+                                <td><code>{{ hash_key[:16] }}...</code></td>
+                                <td><small>{{ file_ref }}</small></td>
+                            </tr>
+                            {% endfor %}
+                            {% if payload.index|length > 10 %}
+                            <tr>
+                                <td colspan="2" class="text-center text-muted">
+                                    ... and {{ payload.index|length - 10 }} more entries
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h6 class="text-warning mt-3">Encryption Keys (First 5 entries)</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>File Reference</th>
+                                <th>Key (First 16 chars)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for file_ref, key in payload.keys.items()[:5] %}
+                            <tr>
+                                <td><small>{{ file_ref }}</small></td>
+                                <td><code>{{ key[:16] }}...</code></td>
+                            </tr>
+                            {% endfor %}
+                            {% if payload.keys|length > 5 %}
+                            <tr>
+                                <td colspan="2" class="text-center text-muted">
+                                    ... and {{ payload.keys|length - 5 }} more keys
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Technical Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-lightbulb"></i> How Steganographic Key Storage Works</h6>
+                    <ol class="small mb-0">
+                        <li>User uploads files which are encrypted with AES-256</li>
+                        <li>Keywords are extracted and hashed for searchable encryption</li>
+                        <li>Encryption keys and search indexes are embedded in the profile image</li>
+                        <li>No keys are transmitted during normal operations</li>
+                        <li>Client-side extraction ensures maximum security</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

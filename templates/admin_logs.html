@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}System Logs - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-list"></i> System Logs</h2>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('admin_export_logs') }}" class="btn btn-outline-success">
+                    <i class="fas fa-download"></i> Export CSV
+                </a>
+                <a href="{{ url_for('admin_panel') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Admin Panel
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-filter"></i> Filter Logs</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="user_id" class="form-label">User</label>
+                        <select class="form-select" id="user_id" name="user_id">
+                            <option value="">All Users</option>
+                            {% for user in all_users %}
+                            <option value="{{ user.id }}" {% if current_filters.user_id == user.id %}selected{% endif %}>
+                                {{ user.username }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="action" class="form-label">Action</label>
+                        <input type="text" class="form-control" id="action" name="action" 
+                               value="{{ current_filters.action }}" placeholder="e.g., login">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="success" class="form-label">Status</label>
+                        <select class="form-select" id="success" name="success">
+                            <option value="">All</option>
+                            <option value="true" {% if current_filters.success == 'true' %}selected{% endif %}>Success</option>
+                            <option value="false" {% if current_filters.success == 'false' %}selected{% endif %}>Failed</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="date_from" class="form-label">From Date</label>
+                        <input type="date" class="form-control" id="date_from" name="date_from" 
+                               value="{{ current_filters.date_from }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="date_to" class="form-label">To Date</label>
+                        <input type="date" class="form-control" id="date_to" name="date_to" 
+                               value="{{ current_filters.date_to }}">
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+                <div class="mt-2">
+                    <a href="{{ url_for('admin_all_logs') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-times"></i> Clear Filters
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Logs Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-history"></i> Activity Logs 
+                    <span class="badge bg-primary">{{ logs_pagination.total }}</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if logs_pagination.items %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Resource</th>
+                                <th>IP Address</th>
+                                <th>Status</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs_pagination.items %}
+                            <tr>
+                                <td>
+                                    <small>{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                                </td>
+                                <td>
+                                    <strong>{{ log.user.username if log.user else 'Unknown' }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ log.action }}</span>
+                                </td>
+                                <td>
+                                    <small>{{ log.resource or '-' }}</small>
+                                </td>
+                                <td>
+                                    <small>{{ log.ip_address or '-' }}</small>
+                                </td>
+                                <td>
+                                    {% if log.success %}
+                                        <i class="fas fa-check-circle text-success" title="Success"></i>
+                                    {% else %}
+                                        <i class="fas fa-times-circle text-danger" title="Failed"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small>{{ log.details or '-' }}</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                {% if logs_pagination.pages > 1 %}
+                <nav aria-label="Logs pagination">
+                    <ul class="pagination justify-content-center">
+                        {% if logs_pagination.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin_all_logs', page=logs_pagination.prev_num, **request.args) }}">
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for page_num in logs_pagination.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num != logs_pagination.page %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('admin_all_logs', page=page_num, **request.args) }}">{{ page_num }}</a>
+                                </li>
+                                {% else %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                                {% endif %}
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if logs_pagination.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin_all_logs', page=logs_pagination.next_num, **request.args) }}">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+                
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No logs found matching your criteria</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
