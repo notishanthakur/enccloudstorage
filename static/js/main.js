@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }, 5000);
 
+    // Initialize dark mode
+    initializeDarkMode();
+    
     // File upload drag and drop
     initializeFileUpload();
     
@@ -346,11 +349,81 @@ function initializeActivityUpdates() {
 // Initialize activity updates
 initializeActivityUpdates();
 
+// Dark Mode Functionality
+function initializeDarkMode() {
+    // Check for saved theme preference or default to light mode
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+    
+    // Create theme toggle button if it doesn't exist
+    createThemeToggle();
+}
+
+function setTheme(theme) {
+    const html = document.documentElement;
+    const themeToggle = document.getElementById('theme-toggle');
+    
+    if (theme === 'dark') {
+        html.setAttribute('data-theme', 'dark');
+        if (themeToggle) {
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            themeToggle.title = 'Switch to Light Mode';
+        }
+    } else {
+        html.setAttribute('data-theme', 'light');
+        if (themeToggle) {
+            themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            themeToggle.title = 'Switch to Dark Mode';
+        }
+    }
+    
+    // Save theme preference
+    localStorage.setItem('theme', theme);
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+}
+
+function createThemeToggle() {
+    // Check if toggle already exists
+    if (document.getElementById('theme-toggle')) {
+        return;
+    }
+    
+    // Find the navbar
+    const navbar = document.querySelector('.navbar-nav');
+    if (!navbar) {
+        return;
+    }
+    
+    // Create theme toggle button
+    const themeToggle = document.createElement('li');
+    themeToggle.className = 'nav-item';
+    themeToggle.innerHTML = `
+        <button class="nav-link theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Switch to Dark Mode">
+            <i class="fas fa-moon"></i>
+        </button>
+    `;
+    
+    // Add to navbar (before the user dropdown or login/register links)
+    const userSection = navbar.querySelector('.navbar-nav:last-child');
+    if (userSection) {
+        navbar.insertBefore(themeToggle, userSection);
+    } else {
+        navbar.appendChild(themeToggle);
+    }
+}
+
 // Export functions for global use
 window.EncCloudStorage = {
     showAlert: showAlert,
     confirmAction: confirmAction,
     secureDownload: secureDownload,
     toggleUserStatus: toggleUserStatus,
-    showSecurityInfo: showSecurityInfo
+    showSecurityInfo: showSecurityInfo,
+    toggleTheme: toggleTheme,
+    setTheme: setTheme
 };

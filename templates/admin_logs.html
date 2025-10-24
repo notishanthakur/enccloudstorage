@@ -143,7 +143,9 @@
                     <ul class="pagination justify-content-center">
                         {% if logs_pagination.has_prev %}
                         <li class="page-item">
-                            <a class="page-link" href="{{ url_for('admin_all_logs', page=logs_pagination.prev_num, **request.args) }}">
+                            {% set filtered_args = request.args.to_dict() %}
+                            {% set _ = filtered_args.pop('page', None) %}
+                            <a class="page-link" href="{{ url_for('admin_all_logs', page=logs_pagination.prev_num, **filtered_args) }}">
                                 <i class="fas fa-chevron-left"></i> Previous
                             </a>
                         </li>
@@ -153,7 +155,9 @@
                             {% if page_num %}
                                 {% if page_num != logs_pagination.page %}
                                 <li class="page-item">
-                                    <a class="page-link" href="{{ url_for('admin_all_logs', page=page_num, **request.args) }}">{{ page_num }}</a>
+                                    {% set filtered_args = request.args.to_dict() %}
+                                    {% set _ = filtered_args.pop('page', None) %}
+                                    <a class="page-link" href="{{ url_for('admin_all_logs', page=page_num, **filtered_args) }}">{{ page_num }}</a>
                                 </li>
                                 {% else %}
                                 <li class="page-item active">
@@ -169,7 +173,9 @@
                         
                         {% if logs_pagination.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="{{ url_for('admin_all_logs', page=logs_pagination.next_num, **request.args) }}">
+                            {% set filtered_args = request.args.to_dict() %}
+                            {% set _ = filtered_args.pop('page', None) %}
+                            <a class="page-link" href="{{ url_for('admin_all_logs', page=logs_pagination.next_num, **filtered_args) }}">
                                 Next <i class="fas fa-chevron-right"></i>
                             </a>
                         </li>
